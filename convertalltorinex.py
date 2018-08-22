@@ -13,4 +13,4 @@ pattern='*.m00'
 
 for filename in glob.iglob(os.path.join(rootdir,'**',pattern), recursive=True):
     print('Input file: {}'.format(filename))
-    convert_and_split(input_file=filename)
+    teqctool.convert_and_split(input_file=filename)
