@@ -52,14 +52,14 @@ def get_meta(input_file):
     starts = list(map(lambda s: parse(s),starts))
     if not starts:
         starts.append(meta['start date & time'])
-    starts.append(meta['final date & time'])
+    starts.append(meta['final date & time']+datetime.timedelta(seconds=10))
     
     meta['survey starts'] = starts
     
     return meta
 
 
-def convert_and_split(input_file, min_time_delta=datetime.timedelta(0,5,0), join_small_gaps=datetime.timedelta(0,5,0)):
+def convert_and_split(input_file, min_time_delta=datetime.timedelta(minutes=5), join_small_gaps=datetime.timedelta(minutes=5)):
     
     rinexfiles=[]
     
@@ -73,40 +73,55 @@ def convert_and_split(input_file, min_time_delta=datetime.timedelta(0,5,0), join
     starts = np.delete(starts, np.add(eliminate,1))
     
     for (ix,start) in enumerate(starts[:-1]):
-        end = starts[ix+1]
+        end = starts[ix+1]-datetime.timedelta(seconds=10)
         if (end-start<min_time_delta):
             print('skipping short survey...')
             continue 
         
-        outputname = '{}_{:%Y-%m-%d_%H%M}'.format(unit,start)
         
-        outputname = os.path.join(settings.folders['rinex'],
+        outputfolder = os.path.join(settings.folders['rinex'],
                                   str(start.year),
-                                  unit,
-                                  outputname)
+                                  unit)
         
         
-        pathlib.Path(os.path.dirname(outputname)).mkdir(parents=True, exist_ok=True)
-        output = subprocess.check_output([teqc,'+meta',input_file],universal_newlines=True,stderr=subprocess.STDOUT)
-    
-        with open(outputname + '.rnx', 'w') as f:
-#            subprocess.call([teqc,'+C2','+L5','+L6','+L7','+L8', \
-#                             '-st', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(start), \
-#                             '-e', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(starts[ix+1]), \
-#                             '+nav',outputname + '.gps', input_file],stdout = f)
-            subprocess.call([teqc, \
-                             '-st', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(start), \
-                             '-e', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(starts[ix+1]), \
-                             input_file],stdout = f)            
-        rinexfiles.append(outputname + '.rnx')
-        print(' -> ' + outputname + '.rnx')
-    return rinexfiles
-    
+        pathlib.Path(outputfolder).mkdir(parents=True, exist_ok=True)
+        
+        if (end-start>datetime.timedelta(days=2)):
+            outputname = '{}_{:%Y-%m-%d_%H%M}'.format(unit,start)
+            outputname = os.path.join(outputfolder,outputname)
+            obsfile = outputname + '.{:%y}o'.format(start)
+            navfile = outputname + '.{:%y}n'.format(start)
+            command=[teqc,
+                     '-leica','mdb',
+                     '-st', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(start), 
+                     '-e', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(end),
+                     '+obs', obsfile,
+                     '+nav', navfile,
+                     input_file]
+            print(' -> ' + obsfile)
+        else: 
+            outputname = '{}_{:%Y}_bin_'.format(unit,start)
+            outputname = os.path.join(outputfolder,outputname)
+            command=[teqc,
+                     '-leica','mdb',
+                     '-st', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(start), 
+                     '-e', '{:%Y_%m_%d:%H:%M:%S.%f}'.format(end),
+                     '-tr','d',
+                     '+obs', '+','+nav', '+','-tbin','1d',
+                     outputname,
+                     input_file]
+            print(' -> ' + outputname + 'ddd0.YYo')
+#        print(' '.join(command))
+        print(subprocess.check_output(command))
+
 
 if __name__ == '__main__':
    
-    q =  get_meta(r'C:\Users\ag\HugeData\EGRIP\EGRIP2018\testingteqc\DBX\egrip_1304_0723_194812.m00')
+    q =  get_meta(r'C:\Users\ag\HugeData\EGRIP\EGRIP2018\GPS1 180801\DBX\Default_8632_0731_190123.m00')
     print(q)
+    convert_and_split(r'originaldata\GPS1 180801\DBX\Default_8632_0731_190123.m00')
+
+    
 
 
 
