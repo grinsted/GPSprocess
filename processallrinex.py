@@ -14,11 +14,11 @@ import pathlib
 import glob
 
 
-rinexfolder = settings.folders['rinex'] + r'\2018\unit5'
+rinexfolder = settings.folders['rinex'] #+ r'\2018\unit5'
 outputfolder = settings.folders['output']
 atx = os.path.join(settings.folders['GNSSproducts'],'igs14.atx')
 
-pattern='*.rnx'
+pattern='*.??o'
 
 for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=True):
     if os.stat(filename).st_size<50: 
@@ -43,8 +43,8 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
     print(' - Output file: {}'.format(outputname))
     
     
-    sp3 = gnssproducts.productfiles('IGS_EPH',meta['start date & time'],meta['final date & time'])
-    clk = gnssproducts.productfiles('IGS_CLK',meta['start date & time'],meta['final date & time'])
+    sp3 = gnssproducts.productfiles('COD_EPH',meta['start date & time'],meta['final date & time'])
+    clk = gnssproducts.productfiles('COD_CLK',meta['start date & time'],meta['final date & time'])
 #    ionex = gnssproducts.productfiles('IGR_TEC',meta['start date & time'],meta['final date & time'])
 #    dcb = gnssproducts.productfiles('COD_DCB_P1P2',meta['start date & time'],meta['final date & time'])
     
@@ -59,12 +59,13 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
                '-filter:nav', 'static',
                '-filter:backward',
                #'-pre:cs:l1c1',
-               '-pre:dec','0',
+               '-pre:dec','30',
                #'-pre:setrecpos','SetGeod', '75.75', '-36.53', '2725',
                #'-pre:setrecpos','calculateUSERGeod', '75.75', '-36.53', '2725', #i get no error estimates if i use this w calculate
                '-pre:setrecpos','calculate', #i get no error estimates if i use this w calculate
                #'-model:iono','IONEX',
-               '-print:all','-print:summary',
+               '-print:none','-print:output','-print:summary',
+               '--summary:waitfordaystart',
                '-output:file', outputname]  
     for file in sp3:
         command.append('-input:orb')
@@ -82,7 +83,14 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
     
     print(' - processing...')
     print(subprocess.check_output(command,stderr = subprocess.STDOUT))
-    break
+    
+    pos = os.stat(outputname).st_size - 1200
+    with open(outputname) as f:
+        if pos>0:
+            f.seek(pos)
+        print(f.read())
+    
+    #break
 
     
     
