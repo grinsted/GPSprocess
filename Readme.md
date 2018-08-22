@@ -1,6 +1,6 @@
 
 
-A collection of small python scripts to aid in processing our stake network.
+# A collection of small python scripts to aid in processing our stake network. #
 
 
 
