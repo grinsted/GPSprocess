@@ -30,8 +30,8 @@ def get_meta(input_file):
         raise Exception('teqc_error', 'teqc returned a non-zero errorcode')
         
     #parse stdout
-    meta = re.findall(r'(.*):\s+(.*\S)\s*', out)
-    meta = {item[0]:item[1] for item in meta}
+    meta = re.findall(r'^([^\n:]*):([^\n]*)$', out,re.RegexFlag.MULTILINE)
+    meta = {item[0]:item[1].strip() for item in meta}
     #meta['stdout'] = out
     #meta['stderr'] = err
     #meta['returncode'] = p.returncode     
@@ -69,7 +69,7 @@ def convert_and_split(input_file, min_time_delta=datetime.timedelta(minutes=5), 
     
     #combine starts if they are less than xx min appart. 
     dt = np.diff(starts)
-    eliminate = (dt[0:-1]<join_small_gaps).nonzero()  
+    eliminate = (dt[0:-1]<join_small_gaps).nonzero()
     starts = np.delete(starts, np.add(eliminate,1))
     
     for (ix,start) in enumerate(starts[:-1]):
@@ -78,15 +78,14 @@ def convert_and_split(input_file, min_time_delta=datetime.timedelta(minutes=5), 
             print('skipping short survey...')
             continue 
         
-        
         outputfolder = os.path.join(settings.folders['rinex'],
                                   str(start.year),
                                   unit)
         
-        
         pathlib.Path(outputfolder).mkdir(parents=True, exist_ok=True)
         
-        if (end-start>datetime.timedelta(days=2)):
+        if (end-start.replace(second=0,hour=0,minute=0)<datetime.timedelta(days=1)):
+            #if it does not span midnight:
             outputname = '{}_{:%Y-%m-%d_%H%M}'.format(unit,start)
             outputname = os.path.join(outputfolder,outputname)
             obsfile = outputname + '.{:%y}o'.format(start)
@@ -98,9 +97,16 @@ def convert_and_split(input_file, min_time_delta=datetime.timedelta(minutes=5), 
                      '+obs', obsfile,
                      '+nav', navfile,
                      input_file]
-            print(' -> ' + obsfile)
+            if os.stat(obsfile).st_size==0: 
+                os.remove(obsfile)
+                os.remove(navfile)
+#            else:
+#            m = get_meta(obsfile)
+#            print(m)
+#            return
+            print(' -> {} dt={}'.format(obsfile,end-start))
         else: 
-            outputname = '{}_{:%Y}_bin_'.format(unit,start)
+            outputname = '{}_{:%Y%m%d%H%M}_bin_'.format(unit,start)
             outputname = os.path.join(outputfolder,outputname)
             command=[teqc,
                      '-leica','mdb',
@@ -117,7 +123,7 @@ def convert_and_split(input_file, min_time_delta=datetime.timedelta(minutes=5), 
 
 if __name__ == '__main__':
    
-    q =  get_meta(r'C:\Users\ag\HugeData\EGRIP\EGRIP2018\GPS1 180801\DBX\Default_8632_0731_190123.m00')
+    q =  get_meta(r'originaldata\GPS1 180801\DBX\Default_8632_0731_190123.m00')
     print(q)
     convert_and_split(r'originaldata\GPS1 180801\DBX\Default_8632_0731_190123.m00')
 

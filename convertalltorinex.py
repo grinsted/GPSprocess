@@ -7,6 +7,8 @@ Created on Tue Aug 21 10:30:01 2018
 
 import teqctool 
 import settings
+import glob
+import os
 
 rootdir = settings.folders['originaldata']
 pattern='*.m00'
