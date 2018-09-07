@@ -26,6 +26,8 @@ def read_glab_output(inputfile):
     outputlines = re.findall('^OUTPUT.*$',contents,re.MULTILINE)
     outputlines = io.StringIO('\n'.join(outputlines))
 
+
+
     columnnames = ['rowtype',
                 'Year', 'DOY', 'Seconds of day',
                 'convergence', #Square root of the sum of the covariance matrix. 
@@ -49,13 +51,18 @@ if __name__ == '__main__':
    
     inputfile = r'C:\Users\ag\Documents\GitHub\GPSprocess\output\2017\unit1\unit1_2017-07-31_1216.txt'
     inputfile = r'C:\Users\ag\Documents\GitHub\GPSprocess\output\2018\unit1\unit1_2018-07-31_1357.txt'
+    
+    inputfile = r'output\2017\unit8\unit8_2017-07-28_1202.txt'
+    
     # inputfile = r'C:\Users\ag\Documents\GitHub\GPSprocess\output\2017\unit1\unit1_2017-07-26_1139.txt'
     data=read_glab_output(inputfile)
-    data.iloc[-1]
+    
+    d=data.iloc[-1]
+    print(inputfile,d['latitude'],d['longitude'],d['height'])
 #    plt.semilogy(data['convergence'])
     #plt.plot(data['longitude'],data['latitude'],'.-')
     #plt.plot(data.iloc[-2:]['longitude'],data.iloc[-2:]['latitude'],'rx')
     #plt.draw()
     
-    plt.plot((data['latitude']-data['latitude'][10])*111e3,data['North error'],'.-')
+#    plt.plot((data['latitude']-data['latitude'][10])*111e3,data['North error'],'.-')
     
