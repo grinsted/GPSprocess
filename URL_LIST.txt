@@ -106,9 +106,11 @@ IGUS_ERP       ftp://garner.ucsd.edu/pub/products/%W/igu%W%D_%h.erp.Z           
 IGSS_POS       ftp://garner.ucsd.edu/pub/products/%W/igs%yp%W%D.snx.Z           c:\GNSS_DATA\product\%W
 
 #! PRODUCT (CODE)
-COD_DCB_P1P2   ftp://ftp.unibe.ch/aiub/CODE/%Y/P1P2%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
-COD_DCB_P1C1   ftp://ftp.unibe.ch/aiub/CODE/%Y/P1C1%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
-COD_DCB_P2C2   ftp://ftp.unibe.ch/aiub/CODE/%Y/P2C2%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
+COD_DCB_P1P2   ftp://ftp.aiub.unibe.ch/CODE/%Y/P1P2%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
+COD_DCB_P1C1   ftp://ftp.aiub.unibe.ch/CODE/%Y/P1C1%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
+COD_DCB_P2C2   ftp://ftp.aiub.unibe.ch/CODE/%Y/P2C2%y%m.DCB.Z                   c:\GNSS_DATA\data\dcb
+COD_TEC        ftp://ftp.aiub.unibe.ch/CODE/%Y/CODG%n0.%yI.Z                    c:\GNSS_DATA\data\%W
+
 
 #! PRODUCT (JAXA)
 JAXA_EPH       http://qz-vision.jaxa.jp/USE/archives/final/%Y/qzf%W%D.sp3       c:\GNSS_DATA\product\qzv\%W
