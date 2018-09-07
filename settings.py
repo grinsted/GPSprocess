@@ -5,8 +5,8 @@
 
 folders = {'GNSSproducts': 'GNSSproducts',
            'output': 'output',
-           'rinex': 'rinex',
-           'originaldata': 'originaldata'}
+           'rinex': '..',
+           'originaldata': '..'}
 
 
 
