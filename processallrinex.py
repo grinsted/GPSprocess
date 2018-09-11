@@ -25,9 +25,9 @@ pattern='*.??o'
 #pattern= 'GPS2017Card8-0708-daily2090.17o'
 #
 #
-testMode = False
+testMode = True
 if testMode:
-    rinexfolder = r'..\test exclude\hangs'
+    rinexfolder = r'..\test exclude'
     outputfolder = r'..\test exclude'
     pattern = '*.??o'
 

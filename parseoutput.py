@@ -12,6 +12,7 @@ Created on Wed Aug 22 13:39:52 2018
 import io
 import re
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import glob
 import settings
