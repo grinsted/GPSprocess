@@ -69,10 +69,14 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
     isKinematic = stationname.lower().find('kine')>=0
     
     
+    
+    
     pathlib.Path(os.path.dirname(outputname)).mkdir(parents=True, exist_ok=True)
     
     print(' - Output file: {}'.format(outputname))
     
+    if os.path.isfile(outputname):
+        continue
     
     sp3 = gnssproducts.productfiles('COD_EPH',meta['start date & time'],meta['final date & time'])
     clk = gnssproducts.productfiles('COD_CLK',meta['start date & time'],meta['final date & time'])
