@@ -1,10 +1,10 @@
 
 
-
+import os
 #folder where all downloadable data products are stored
 
 folders = {'GNSSproducts': 'GNSSproducts',
-           'output': 'output',
+           'output': os.path.join('..','output'),
            'rinex': '..',
            'originaldata': '..'}
 
@@ -13,12 +13,16 @@ folders = {'GNSSproducts': 'GNSSproducts',
 
 #executables:  
 
-teqc = r'bin\teqc.exe'
-
-gLAB = 'c:\glab\win\glab.exe' 
-
-tar = r'bin\tar.exe'
-gunzip = r'bin\gunzip.exe'
+if os.name == 'nt':
+	teqc = r'bin\teqc.exe'
+	gLAB = r'c:\glab\win\glab.exe' 
+	tar = r'bin\tar.exe'
+	gunzip = r'bin\gunzip.exe'
+else:
+	teqc = r'bin/linux/teqc'
+	gLAB = r'bin/linux/gLAB_linux' 
+	tar = r'tar'
+	gunzip = r'gunzip'
 
 
 
