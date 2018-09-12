@@ -1,6 +1,6 @@
 
 
-# A collection of small python scripts to aid in processing our stake network. #
+# A collection of python scripts used to automate our PPP GNSS processing. #
 
 
 
