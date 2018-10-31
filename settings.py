@@ -26,6 +26,9 @@ else:
 
 
 
+projection = '+init=EPSG:3413 +units=m' #this is only used in the very end for velocities.
+
+
 # convert receiver ID (from teqc) to CIC unit number
 
         

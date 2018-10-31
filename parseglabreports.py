@@ -5,10 +5,6 @@ Created on Wed Aug 22 13:39:52 2018
 @author: aslak
 """
 
-
-
-
-
 import io
 import re
 import pandas as pd
@@ -18,6 +14,7 @@ import glob
 import settings
 import datetime
 import os
+import pyproj
 
 def read_glab_output(inputfile):
     with open(inputfile, 'r') as file:
@@ -61,11 +58,12 @@ def read_glab_output(inputfile):
 
 
 
+
 def make_table_of_all():
     rootdir = settings.folders['output']
     pattern = '*.glab'
     
-    D = pd.DataFrame(columns=['id', 'datetime','lat','lon','z','sigmaE', 'sigmaN', 'sigmaZ'])
+    D = pd.DataFrame(columns=['id', 'datetime','lat','lon','z','sigmaX', 'sigmaY', 'sigmaZ' ,'filename'])
     
     for filename in glob.iglob(os.path.join(rootdir,'**',pattern), recursive=True):
         print('Input file: {}'.format(filename))
@@ -84,16 +82,14 @@ def make_table_of_all():
         
         D.loc[D.shape[0]] = [stationname, avg_time, 
                          row['latitude'], row['longitude'], row['height'],
-                         row['X error'], row['Y error'], row['Z error']
+                         row['X error'], row['Y error'], row['Z error'], filename
                          ]
-    writer = pd.ExcelWriter(os.path.join(rootdir,'summary.xlsx'))
-    D.to_excel(writer,'Summary', index = False)
-    writer.save()
-        
-        
+    
+    pstereo = pyproj.Proj(settings.projection)
+    D['x'],D['y'] = pstereo(D['lon'].values,D['lat'].values)
+    
     return D
 
-            
         
 
 
@@ -101,19 +97,13 @@ def make_table_of_all():
 
 if __name__ == '__main__':
    
-    D=make_table_of_all()
-    
-    inputfile = r'C:\Users\ag\HugeData\EGRIP GPS\GPSprocess\output\2017\unit3\EG-C-200_20170804_1705.txt'
-    
-    # inputfile = r'C:\Users\ag\Documents\GitHub\GPSprocess\output\2017\unit1\unit1_2017-07-26_1139.txt'
-    (stationname,data) = read_glab_output(inputfile)
-    
-    d=data.iloc[-1]
-    print(inputfile,d['latitude'],d['longitude'],d['height'])
-#    plt.semilogy(data['convergence'])
-    #plt.plot(data['longitude'],data['latitude'],'.-')
-    #plt.plot(data.iloc[-2:]['longitude'],data.iloc[-2:]['latitude'],'rx')
-    #plt.draw()
-    
-#    plt.plot((data['latitude']-data['latitude'][10])*111e3,data['North error'],'.-')
-    
+    D = make_table_of_all()
+    D.sort_values(by=['id','datetime'],inplace=True)
+    writer = pd.ExcelWriter(os.path.join(settings.folders['output'],'positions.xlsx'))
+    D.to_excel(writer,'Positions', index = False)
+    writer.save()
+#    inputfile = r'C:\Users\ag\HugeData\EGRIP GPS\GPSprocess\output\2017\unit3\EG-C-200_20170804_1705.txt'
+#    (stationname,data) = read_glab_output(inputfile)
+#    
+#    d=data.iloc[-1]
+#    print(inputfile,d['latitude'],d['longitude'],d['height'])

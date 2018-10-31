@@ -15,7 +15,7 @@ import glob
 import tempfile 
 import re
 
-rinexfolder = settings.folders['rinex']
+rinexfolder = settings.folders['rinex'] 
 outputfolder = settings.folders['output']
 atx = os.path.join(settings.folders['GNSSproducts'],'igs14.atx')
 pattern='*.??o'
@@ -25,13 +25,15 @@ pattern='*.??o'
 #pattern= 'GPS2017Card8-0708-daily2090.17o'
 #
 #
-testMode = True
+testMode = False
 if testMode:
     rinexfolder = r'..\test exclude'
     outputfolder = r'..\test exclude'
     pattern = '*.??o'
 
-
+#rinexfolder = r'C:\Users\ag\HugeData\EGRIP GPS\2015\CardNo3'
+#pattern= 'unit3_EG-S-010_*.??o'
+#
 
 for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=True):
     if os.stat(filename).st_size<50: 
@@ -42,7 +44,14 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
             continue
         if filename.lower().find('exclude')>=0:
             continue
-
+    
+    meta = teqctool.get_meta(filename)
+    unit = settings.units[meta['receiver ID number']]
+    start = meta['start date & time']
+    stationname = meta['station name']
+    if stationname.lower().find('stakeid')>=0:
+        print(filename)
+        
     print()
     print('Input file: {}'.format(filename))
     
@@ -55,11 +64,8 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
         with open(filename, 'w') as file:
             file.write(contents)
 
-    meta = teqctool.get_meta(filename)
-    unit = settings.units[meta['receiver ID number']]
-    start = meta['start date & time']
-    stationname = meta['station name']
-    
+
+
     outputname = '{}_{:%Y%m%d_%H%M}.glab'.format(stationname,start)
     
     outputname = os.path.join(outputfolder,
@@ -73,7 +79,7 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
     
     pathlib.Path(os.path.dirname(outputname)).mkdir(parents=True, exist_ok=True)
     
-    print(' - Output file: {}'.format(outputname))
+    print('    output: {}'.format(outputname))
     
     if os.path.isfile(outputname):
         continue
@@ -82,7 +88,7 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
     clk = gnssproducts.productfiles('COD_CLK',meta['start date & time'],meta['final date & time'])
     dcpp1p2 = gnssproducts.productfiles('COD_DCB_P1P2',meta['start date & time'],meta['final date & time'])
     dcpp1c1 = gnssproducts.productfiles('COD_DCB_P1C1',meta['start date & time'],meta['final date & time'])
-#    inx = gnssproducts.productfiles('IGS_TEC',meta['start date & time'],meta['final date & time'])
+    inx = gnssproducts.productfiles('IGS_TEC',meta['start date & time'],meta['final date & time'])
     
     
     
@@ -119,10 +125,10 @@ for filename in glob.iglob(os.path.join(rinexfolder,'**',pattern), recursive=Tru
         command.extend(['-input:dcb', file])
     for file in dcpp1c1:
         command.extend(['-input:dcb', file])        
-#    for file in inx:
-#        command.extend(['-input:inx', file])                
+    for file in inx:
+        command.extend(['-input:inx', file])                
         
-    print(' '.join(command).replace(' -','\n   -'))
+    #print(' '.join(command).replace(' -','\n   -'))
     
     print(' - processing...')
     
