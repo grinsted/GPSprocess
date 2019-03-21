@@ -27,7 +27,7 @@ Dependencies:
 
 You can also use some of these scripts with other GNSS processing tools. For example you may want to download all clock files from CODE for a specific rinex file. This can be done like this. 
 
-```
+```python
 import teqctool 
 import gnssproducts
 
