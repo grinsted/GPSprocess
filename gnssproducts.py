@@ -17,24 +17,22 @@ import subprocess
 
 import settings
 
-
-
 def loaddatacenterurls():
     """
     ==================================================================================
     The urls of all the Data centers are in url_list. That file is from RTKLIB
-    
+
     Here I load it and modify it to suit gps_sprintf() and figure out the download interval
     ==================================================================================
     """
-    datacenterurls = pd.read_table(r'URL_LIST.txt', 
-                         header = None, comment=r'#', 
+    datacenterurls = pd.read_table(r'URL_LIST.txt',
+                         header = None, comment=r'#',
                          names=['key', 'url', 'interval'],
                          delim_whitespace=True, index_col=0)
-    
+
     for i, row in datacenterurls.iterrows():
         url = row['url']
-        
+
         upperurl = url.upper()
         interval = datetime.timedelta(days=100000)
         if '%Y' in upperurl: interval = datetime.timedelta(days=365)
@@ -44,7 +42,7 @@ def loaddatacenterurls():
         if '%N' in upperurl: interval = datetime.timedelta(days=1)
         if '%H' in upperurl: interval = datetime.timedelta(hours=1)
         row['interval'] = interval
-    
+
         #convert sprintf style url to something pythons .format function likes:
         url = url.replace('%Y','{date:%Y}') #         %Y -> yyyy    : year (4 digits) (2000-2099)
         url = url.replace('%y','{date:%y}') #         %y -> yy      : year (2 digits) (00-99)
@@ -81,15 +79,15 @@ def extract(compressedfile,targetfolder):
     elif compressedfile.endswith('.Z') or compressedfile.endswith('.gz'):
         subprocess.call([settings.gunzip, compressedfile])
     #TODO:otherwise move file to that folder
-        
+
 
 
 def productfiles(product_key, start_date, end_date):
     """
-        Returns a list of files with a given product key and covering the date range specified. 
+        Returns a list of files with a given product key and covering the date range specified.
 
-        Will auto downloads and extract missing files. 
-        
+        Will auto downloads and extract missing files.
+
         @author: aslak
     """
     product = datacenterurls.loc[product_key]
@@ -104,37 +102,43 @@ def productfiles(product_key, start_date, end_date):
         localfolder = os.path.join(settings.folders['GNSSproducts'],
                      product_key,
                      str(date.year))
-        
+
         if not os.path.isfile(os.path.join(localfolder,localfile)):
             print('    - Downloading {}'.format(url))
             url = urlparse(url)
             #DOWNLOAD IT!
-            with ftplib.FTP(url.netloc) as ftp:
-                ftp.login()
+            if url.scheme == 'ftp':
+                ftpfun = ftplib.FTP
+            else:
+                ftpfun = ftplib.FTP_TLS  
+            with ftpfun(url.netloc) as ftp:
+                ftp.login(user='anonymous', passwd='anslak@nbi.ku.dk')
+                if url.scheme == 'ftps':
+                    ftp.prot_p()
                 localpath = os.path.join(localfolder,urlfilename)
-                pathlib.Path(localfolder).mkdir(parents=True, exist_ok=True) 
+                pathlib.Path(localfolder).mkdir(parents=True, exist_ok=True)
                 with open(localpath, 'wb') as f:
                     ftp.cwd(os.path.dirname(url.path))
                     ftp.retrbinary('RETR ' + urlfilename, f.write)
             #EXTRACT IT!
             extract(localpath,localfolder)
-        
+
         files.append(os.path.join(localfolder,localfile))
-        
+
         date = date + product['interval']
 
     return set(files)
-    
-    
+
+
 if __name__ == '__main__':
-    #this is for testing only    
+    #this is for testing only
 
     startdate = datetime.datetime(2018, 7, 31, 16, 51, 17)
     enddate = datetime.datetime(2018, 8, 3, 0,0,0)
     url = datacenterurls.loc['IGS_EPH']['url']
     print(gps_sprintf(url,startdate))
     assert(gps_sprintf(url,startdate) == 'ftp://cddis.gsfc.nasa.gov/gps/products/2012/igs20122.sp3.Z')
-    
+
     print(productfiles('IGS_EPH',startdate,enddate))
 
 
